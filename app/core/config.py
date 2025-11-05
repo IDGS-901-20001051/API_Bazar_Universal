@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Union
 from pydantic_settings import BaseSettings
 from pydantic import field_validator
 
@@ -14,8 +14,8 @@ class Settings(BaseSettings):
     # Environment
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     
-    # CORS
-    CORS_ORIGINS: List[str] = [
+    # CORS - Accept both string and list
+    CORS_ORIGINS: Union[str, List[str]] = [
         "http://localhost:3000",
         "http://localhost:5173", 
         "http://localhost:5174",
@@ -30,8 +30,13 @@ class Settings(BaseSettings):
     @classmethod
     def assemble_cors_origins(cls, v):
         if isinstance(v, str):
-            return [i.strip() for i in v.split(",")]
-        return v
+            # Handle comma-separated string from environment variables
+            if v.strip():
+                return [i.strip() for i in v.split(",")]
+            return []
+        elif isinstance(v, list):
+            return v
+        return []
 
     model_config = {
         "env_file": ".env",
