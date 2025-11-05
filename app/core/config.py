@@ -18,8 +18,10 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "http://localhost:5173", 
         "http://localhost:5174",
-        "https://*.railway.app",
+        "https://bazar-universal.netlify.app",
         "https://*.netlify.app",
+        "https://*.render.com",
+        "https://*.railway.app",
         "https://*.vercel.app"
     ]
     
