@@ -20,8 +20,7 @@ class Sale(BaseModel):
     status: str = "Completada"
     date: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 class SaleStats(BaseModel):
     total_sales: int
