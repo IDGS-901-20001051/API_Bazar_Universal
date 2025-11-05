@@ -8,6 +8,105 @@ import os
 
 router = APIRouter()
 
+def get_fallback_products_data():
+    """Fallback product data in case JSON file is not found"""
+    return [
+        {
+            "title": "Essence Mascara Lash Princess",
+            "description": "The Essence Mascara Lash Princess is a popular mascara known for its volumizing and lengthening effects. Achieve dramatic lashes with this long-lasting and cruelty-free formula.",
+            "category": "beauty",
+            "price": 9.99,
+            "discountPercentage": 7.17,
+            "rating": 4.94,
+            "stock": 5,
+            "tags": ["beauty", "mascara"],
+            "brand": "Essence",
+            "sku": "RCH45Q1A",
+            "weight": 2,
+            "warrantyInformation": "1 month warranty",
+            "shippingInformation": "Ships in 1 month",
+            "availabilityStatus": "Low Stock",
+            "returnPolicy": "30 days return policy",
+            "minimumOrderQuantity": 24,
+            "images": ["https://cdn.dummyjson.com/products/images/beauty/Essence%20Mascara%20Lash%20Princess/1.png"]
+        },
+        {
+            "title": "Eyeshadow Palette with Mirror",
+            "description": "The Eyeshadow Palette with Mirror offers a versatile range of eyeshadow shades for creating stunning eye looks. With a built-in mirror, it's convenient for on-the-go makeup application.",
+            "category": "beauty",
+            "price": 19.99,
+            "discountPercentage": 5.5,
+            "rating": 3.28,
+            "stock": 44,
+            "tags": ["beauty", "eyeshadow"],
+            "brand": "Glamour Beauty",
+            "sku": "MVCFH27F",
+            "weight": 3,
+            "warrantyInformation": "1 year warranty",
+            "shippingInformation": "Ships in 2 weeks",
+            "availabilityStatus": "In Stock",
+            "returnPolicy": "30 days return policy",
+            "minimumOrderQuantity": 32,
+            "images": ["https://cdn.dummyjson.com/products/images/beauty/Eyeshadow%20Palette%20with%20Mirror/1.png"]
+        },
+        {
+            "title": "Calvin Klein CK One",
+            "description": "CK One by Calvin Klein is a classic unisex fragrance, known for its fresh and clean scent. It's a versatile fragrance suitable for everyday wear.",
+            "category": "fragrances",
+            "price": 49.99,
+            "discountPercentage": 0.32,
+            "rating": 4.85,
+            "stock": 17,
+            "tags": ["fragrances", "perfumes"],
+            "brand": "Calvin Klein",
+            "sku": "DZM2JQZE",
+            "weight": 5,
+            "warrantyInformation": "5 year warranty",
+            "shippingInformation": "Ships overnight",
+            "availabilityStatus": "In Stock",
+            "returnPolicy": "No return policy",
+            "minimumOrderQuantity": 20,
+            "images": ["https://cdn.dummyjson.com/products/images/fragrances/Calvin%20Klein%20CK%20One/1.png"]
+        },
+        {
+            "title": "Annibale Colombo Bed",
+            "description": "The Annibale Colombo Bed is a luxurious and elegant bed frame, crafted with high-quality materials for a comfortable and stylish bedroom.",
+            "category": "furniture",
+            "price": 1899.99,
+            "discountPercentage": 0.29,
+            "rating": 4.14,
+            "stock": 47,
+            "tags": ["furniture", "beds"],
+            "brand": "Annibale Colombo",
+            "sku": "4KMDTZWF",
+            "weight": 3,
+            "warrantyInformation": "2 year warranty",
+            "shippingInformation": "Ships overnight",
+            "availabilityStatus": "In Stock",
+            "returnPolicy": "7 days return policy",
+            "minimumOrderQuantity": 1,
+            "images": ["https://cdn.dummyjson.com/products/images/furniture/Annibale%20Colombo%20Bed/1.png"]
+        },
+        {
+            "title": "Apple",
+            "description": "Fresh and crisp apples, perfect for snacking or incorporating into various recipes.",
+            "category": "groceries",
+            "price": 1.99,
+            "discountPercentage": 1.97,
+            "rating": 2.96,
+            "stock": 9,
+            "tags": ["fruits"],
+            "sku": "QTROUV79",
+            "weight": 8,
+            "warrantyInformation": "2 year warranty",
+            "shippingInformation": "Ships in 2 weeks",
+            "availabilityStatus": "In Stock",
+            "returnPolicy": "60 days return policy",
+            "minimumOrderQuantity": 44,
+            "images": ["https://cdn.dummyjson.com/products/images/groceries/Apple/1.png"]
+        }
+    ]
+
 @router.post("/init-database")
 def init_database(db: Session = Depends(get_db)):
     """Initialize database with sample data"""
@@ -21,10 +120,27 @@ def init_database(db: Session = Depends(get_db)):
             }
         
         # Load products from JSON file (from data directory)
-        json_file_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'data', 'products.json')
+        # Try multiple possible paths for the JSON file
+        possible_paths = [
+            os.path.join(os.path.dirname(__file__), '..', '..', '..', 'data', 'products.json'),
+            os.path.join(os.getcwd(), 'data', 'products.json'),
+            os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), 'data', 'products.json'),
+            'data/products.json',
+            './data/products.json'
+        ]
         
-        if not os.path.exists(json_file_path):
-            raise HTTPException(status_code=404, detail="Products JSON file not found")
+        json_file_path = None
+        for path in possible_paths:
+            if os.path.exists(path):
+                json_file_path = path
+                break
+        
+        if not json_file_path:
+            # If file not found, use hardcoded data as fallback
+            products_data = get_fallback_products_data()
+        else:
+            with open(json_file_path, 'r', encoding='utf-8') as f:
+                products_data = json.load(f)
         
         with open(json_file_path, 'r', encoding='utf-8') as f:
             products_data = json.load(f)
