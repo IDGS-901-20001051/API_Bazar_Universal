@@ -1,0 +1,11 @@
+{
+  "build": {
+    "commands": [
+      "pip install -r requirements.txt",
+      "python data/init_db.py"
+    ]
+  },
+  "deploy": {
+    "startCommand": "python start.py"
+  }
+}
